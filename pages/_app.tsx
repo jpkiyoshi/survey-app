@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import { useState } from 'react';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { SessionContextProvider, Session } from '@supabase/auth-helpers-react';
+import { ChakraProvider } from '@chakra-ui/react';
 import type { AppProps } from 'next/app';
 
 export default function App({
@@ -15,7 +16,9 @@ export default function App({
 			supabaseClient={supabase}
 			initialSession={pageProps.initialSession}
 		>
-			<Component {...pageProps} />
+			<ChakraProvider>
+				<Component {...pageProps} />
+			</ChakraProvider>
 		</SessionContextProvider>
 	);
 }
