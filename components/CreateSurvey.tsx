@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { Button, VStack, Input } from '@chakra-ui/react';
+import { MdFormatListBulletedAdd } from 'react-icons/md';
 
 type Props = {
 	surveyOptions: string[];
@@ -17,7 +19,8 @@ const Option = ({
 }) => (
 	<div key={index}>
 		<label htmlFor={`option${index + 1}`}>Opção {index + 1}</label>
-		<input
+		<Input
+			variant='filled'
 			type='text'
 			name={`option${index + 1}`}
 			id={`option${index + 1}`}
@@ -37,7 +40,7 @@ const Title = ({
 	return (
 		<div>
 			<label htmlFor='title'>Título</label>
-			<input
+			<Input
 				type='text'
 				name='title'
 				id='title'
@@ -107,8 +110,8 @@ const CreateSurvey = ({ surveyOptions, handleSurveyOptions }: Props) => {
 	};
 
 	return (
-		<>
-			<form onSubmit={handleSubmit}>
+		<form onSubmit={handleSubmit}>
+			<VStack spacing='20px' align='center'>
 				<Title title={title} handleTitle={handleTitle} />
 				{surveyOptions.map((option, index) => (
 					<Option
@@ -118,16 +121,20 @@ const CreateSurvey = ({ surveyOptions, handleSurveyOptions }: Props) => {
 						handleChange={handleChange}
 					/>
 				))}
-				<br />
-				<button type='button' onClick={addOption}>
+				<Button
+					leftIcon={<MdFormatListBulletedAdd />}
+					variant='outline'
+					colorScheme='blue'
+					size='sm'
+					type='button'
+					onClick={addOption}
+				>
 					Adicionar opção
-				</button>
-				<br />
-				<br />
-				<br />
-				<button type='submit'>Criar enquete</button>
-			</form>
-		</>
+				</Button>
+
+				<Button type='submit'>Criar enquete</Button>
+			</VStack>
+		</form>
 	);
 };
 

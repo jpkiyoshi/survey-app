@@ -1,8 +1,20 @@
 import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import NextLink from 'next/link';
+import {
+	Button,
+	Link,
+	Heading,
+	VStack,
+	Box,
+	useRadio,
+	UseRadioProps,
+	useRadioGroup,
+	Text,
+} from '@chakra-ui/react';
 
-type Props = {
+import { FormEvent, useState } from 'react';
+
+type SurveyProps = {
 	data: {
 		surveys: {
 			author_id: string | null;
@@ -28,33 +40,65 @@ type Props = {
 	};
 };
 
-type TotalVotes = {
-	[key: string]: number;
-};
+interface RadioCardProps extends UseRadioProps {
+	children: React.ReactNode;
+}
 
-const Survey = ({ data }: Props) => {
+function RadioCard(props: RadioCardProps) {
+	const { getInputProps, getCheckboxProps } = useRadio(props);
+
+	const input = getInputProps();
+	const checkbox = getCheckboxProps();
+
+	return (
+		<Box as='label'>
+			<input {...input} />
+			<Box
+				{...checkbox}
+				cursor='pointer'
+				borderWidth='1px'
+				borderRadius='md'
+				boxShadow='md'
+				_checked={{
+					bg: 'teal.600',
+					color: 'white',
+					borderColor: 'teal.600',
+				}}
+				_focus={{
+					boxShadow: 'outline',
+				}}
+				px={5}
+				py={3}
+			>
+				{props.children}
+			</Box>
+		</Box>
+	);
+}
+
+const Survey = ({ data }: SurveyProps) => {
 	const { profiles, surveyOptions, surveys } = data;
 
-	const [answer, setAnswer] = useState('');
-	const [selectedVoteId, setSelectedVoteId] = useState(0);
+	const [answerId, setAnswerId] = useState('');
+	const { getRootProps, getRadioProps } = useRadioGroup({
+		name: 'surveys',
+		onChange: setAnswerId,
+	});
 
-	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-		setAnswer(e.target.value);
-		setSelectedVoteId(Number(e.target.id));
-	};
+	const group = getRootProps();
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (!answer || typeof answer !== 'string') {
-			console.error('Answer is not defined or is not a string');
+		if (!answerId || typeof answerId !== 'string') {
+			console.error('Resposta inválida.');
 			return;
 		}
 
 		const vote = {
-			survey_id: 11,
+			survey_id: 13,
 			voter_id: '04b6f2df-7684-4d15-9e92-9eea37fa36a2',
-			survey_options_id: selectedVoteId,
+			survey_options_id: Number(answerId),
 		};
 
 		const { data, error } = await supabase.from('survey_votes').insert(vote);
@@ -64,37 +108,37 @@ const Survey = ({ data }: Props) => {
 			return;
 		}
 
-		setAnswer('');
+		setAnswerId('');
 	};
 
 	return (
 		<>
 			<form onSubmit={handleSubmit}>
-				<h1>{surveys[1].title}</h1>
-				<p>{surveys[1].description}</p>
-				<p>{profiles[1].full_name}</p>
-				{surveyOptions
-					.filter(option => option.survey_id === 11)
-					.map(option => (
-						<label key={option.id}>
-							<input
-								id={`${option.id}`}
-								type='radio'
-								name='survey'
-								value={option.option_name}
-								onChange={handleChange}
-								checked={answer === option.option_name}
-							/>
-							{option.option_name}
-						</label>
-					))}
-				<br />
-				<button type='submit'>Enviar</button>
+				<VStack>
+					<Heading as='h1' size='xl'>
+						{surveys[3].title}
+					</Heading>
+					<p>{surveys[3].description}</p>
+					<Text fontSize={'sm'}>By: {profiles[1].full_name}</Text>
+					<VStack {...group}>
+						{surveyOptions
+							.filter(option => option.survey_id === 13)
+							.map(option => {
+								const radio = getRadioProps({ value: option.id });
+								return (
+									<RadioCard key={option.id} {...radio}>
+										{option.option_name}
+									</RadioCard>
+								);
+							})}
+					</VStack>
+					<br />
+					<Button type='submit'>Enviar</Button>
+				</VStack>
 			</form>
-			<br />
-			<div>Opção selecionada: {answer}</div>
-			<br />
-			<Link href='/'>Voltar para criação de enquete</Link>
+			<Link as={NextLink} href='/'>
+				<Button>Voltar para criação de enquete</Button>
+			</Link>
 		</>
 	);
 };
